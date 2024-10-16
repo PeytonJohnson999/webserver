@@ -1,0 +1,186 @@
+body 
+{
+    background-image: url("/images/indexBackground.jpg");
+    color: rgb(0, 0, 0);
+    padding: 10px;
+    font-family: arial;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+
+.all-contents 
+{
+    max-width: 800px;
+    margin: auto;
+}
+ 
+/* navigation menu */
+nav 
+{
+    background: #1c3a96;
+    margin-bottom: 20px;
+    display: flex;
+    padding: 10px;
+    border-radius: 0;
+    border: 4px #4adaf5 ridge;
+    border-radius: 25px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1 
+{
+    display: flex;
+    align-items: center;
+    color: rgb(0, 0, 0);
+    flex: 1;
+    margin: 0;
+}
+
+
+
+#nav-ul 
+{
+    list-style-image: none;
+    font-weight: bold;
+    
+}
+
+.nav-li 
+{
+    display: inline-block;
+    background: #4adaf5;
+    padding: 0 10px;
+    border-radius: 20px;
+    margin-right: 10px;
+
+}
+
+a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+}
+ 
+/* main container area beneath menu */
+main 
+{
+    background: #1c3a96;
+    display: flex;
+    border: 4px #4adaf5 ridge;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+    
+.sidebar
+{
+    /*margin-right: 25px;*/
+    padding: 10px;
+    width: 450px;
+    height: 346px;
+    margin-left: 12px;
+    margin-top: 19px;
+    
+}
+
+.sidebar-img 
+{
+    width: 400px;
+    border: 2px black ridge;
+    margin: flex;
+}
+
+.content 
+{
+    flex: 1;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: large;
+}
+
+
+
+
+
+h2, h3 
+{
+    margin: 0px;
+}
+
+
+
+
+#interests {
+    border: 4px #4adaf5 ridge;
+    padding: 8px;
+}
+
+
+
+#sidebar-Warning
+{
+    color: rgb(255, 0, 0);
+    font-weight: bold;
+}
+
+.ProjectsList
+{
+    text-decoration: underline;
+}
+
+
+
+
+
+
+#projectsDiv
+{
+    text-size-adjust: 20px;
+}
+
+/* portfolio styles */
+.content h1 
+{
+    color: black;
+}
+
+#portfolio 
+{
+    list-style-type: none;
+    padding-left: 0;
+    text-decoration: underline;
+}
+
+#portfolio li 
+{
+    background: #4adaf5;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+#portfolio li:hover 
+{
+    background: #eee;
+}
+
+#portfolio a 
+{
+    text-decoration: none;
+    color: #454545;
+}
+
+#practiceMain{
+    background-color: white;
+}
+
+#practiceSidebar{
+    display: block;
+    flex: 1;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: large;
+}

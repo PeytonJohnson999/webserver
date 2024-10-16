@@ -1,6 +1,6 @@
 body 
 {
-    background-image: url("/images/indexBackground.jpg");
+    background-image: url("../images/indexBackground.jpg");
     color: rgb(0, 0, 0);
     padding: 10px;
     font-family: arial;

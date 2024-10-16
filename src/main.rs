@@ -13,6 +13,7 @@ use std::{
 
 use anyhow::anyhow;
 use tokio::{
+    // fs::{self, File},
     io::{AsyncBufRead, AsyncReadExt, AsyncWrite, BufStream, AsyncWriteExt, AsyncBufReadExt, AsyncRead},
     net::{TcpListener, TcpStream},
 };
@@ -53,14 +54,25 @@ async fn main() -> std::io::Result<()>{
 
                 let request = parse_request(&mut stream).await.unwrap();
                 let method = request.method;
-                println!("Path: {:?}", request.path);
+                // println!("Request: {:?}", request.clone());
 
                 //Write index.html to socket
                 if method == Method::GET && (request.path.trim() == "/" || request.path.trim() == "/ index.html"){
 
-                    let mut f = String::new(); 
+                    println!("Index request");
 
-                    fs::File::read_to_string(&mut fs::File::open("html/index.html").unwrap(), &mut f);
+                    // let mut f = String::new();
+
+                    // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
+
+                    let mut index = fs::File::open("html/index.html").unwrap();
+                    // println!("file lines: {}", index.lines().count());
+                    let mut f: Vec<u8> = Vec::new();
+                    index.read_to_end(&mut f);
+                    // let f = String::from_utf8(f).unwrap();
+
+                    // println!("Index file read: {f}");
+
                     let resp = Response::from_html(
                         Status::Ok,
                         f,
@@ -70,14 +82,48 @@ async fn main() -> std::io::Result<()>{
 
                 }else if method == Method::GET && request.path == "/style.css"{
                     
-                    let mut f = String::new();
+                    println!("CSS request");
 
-                    fs::File::read_to_string(&mut fs::File::open("html/style.css").unwrap(), &mut f);
-                    let resp = Response::from_html(Status::Ok, f);
+                    // let mut f = String::new();
+
+                    // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
+
+                    let mut index = fs::File::open("html/style.css").unwrap();
+                    // println!("file lines: {}", index.lines().count());
+                    let mut f: Vec<u8> = Vec::new();
+                    index.read_to_end(&mut f);
+                    // let f = String::from_utf8(f).unwrap();
+
+                    // println!("Index file read: {f}");
+
+                    let resp = Response::from_css(
+                        Status::Ok,
+                        f,
+                    );
+
+                    resp.write(&mut stream).await.unwrap();
+
+                }else if method == Method::GET && request.path.trim() == "/images/indexBackground.jpg" {
+                    eprintln!("Background img request");
+
+                    let mut index = fs::File::open("images/indexBackground.jpg").unwrap();
+                    // println!("file lines: {}", index.lines().count());
+                    let mut f: Vec<u8> = Vec::new();
+                    index.read_to_end(&mut f);
+                    // eprintln!("img read");
+                    // let f = String::from_utf8(f).unwrap();
+
+                    // println!("Index file read: {f}");
+
+                    let resp = Response::from_jpg(
+                        Status::Ok,
+                        f,
+                    );
 
                     resp.write(&mut stream).await.unwrap();
                 }else {
                     eprintln!("404 Error");
+                    // eprintln!("request: {:?}", request);
                     let status_line = "HTTP/1.1 404 NOT FOUND";
                     let contents = fs::read_to_string("html/404.html").unwrap();
                     let length = contents.len();
@@ -86,7 +132,7 @@ async fn main() -> std::io::Result<()>{
                         "{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}"
                     );
 
-                    println!("Response: {response}");
+                    // println!("Response: {response}");
 
                     stream.write(response.as_bytes());
                 }
@@ -99,81 +145,19 @@ async fn main() -> std::io::Result<()>{
     Ok(())
 }
 
-async fn handle_connections(mut stream: TcpStream) {
-    let mut buf: Vec<u8> = Vec::new();
-
-    loop {
-        let n: usize = match stream.read_buf(&mut buf).await{
-            Ok(n) if n == 0 => { return},
-            Ok(n) => n,
-            Err(e) => {eprintln!("Failed to read bytes from socket. Err:{e}"); return},
-        };
-    }
-    // let request = parse_request(stream);
-    let req = String::from_utf8(buf.clone()).unwrap();
-        eprintln!("Read bytes: {req}");
-
-    // let http_request: Vec<_> = buf_reader.lines()
-    //     .map(|result| result.unwrap())
-    //     .take_while(|line| !line.is_empty())
-    //     .collect();
-    // let method = &http_request[0];
-    // println!("method: {}", method);
-
-    // if method.trim() == "GET /index.html HTTP/1.1" || method.trim() == "GET / HTTP/1.1"{
-    //     let status_line = "HTTP/1.1 200 OK";
-    //     let index = fs::read_to_string("html/index.html").expect("Failed to find index.html");
-    //     let file_len = index.len();
-    
-    //     let response = format!("{status_line}\r\nContent-Length: {file_len}\r\n\r\n{index}");
-    
-    //     stream.write_all(response.as_bytes())?;
-
-    // }else if method.trim() == "GET /style.css HTTP/1.1" {
-
-    //     let status_line = "HTTP/1.1 200 OK";
-    //     let css = fs::read_to_string("html/style.css").expect("Failed to find style.css");
-    //     let file_len = css.len();
-    
-    //     let response = format!("{status_line}\r\nContent-Length: {file_len}\r\n\r\n{css}");
-    
-    //     stream.write_all(response.as_bytes())?;
-    // }else {
-    //     let status_line = "HTTP/1.1 404 NOT FOUND";
-    //     let contents = fs::read_to_string("html/404.html").unwrap();
-    //     let length = contents.len();
-
-    //     let response = format!(
-    //         "{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}"
-    //     );
-
-    //     stream.write_all(response.as_bytes()).unwrap();
-    // }
-
-
-
-}
-
-fn handle_client(stream: TcpStream) -> std::io::Result<()>{
-
-
-
-    Ok(())
-}
-
 mod req{
     use std::collections::HashMap;
     use anyhow::anyhow;
     use tokio::io::{AsyncBufRead, AsyncBufReadExt};
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct Request{
         pub method: Method,
         pub path: String,
         headers: HashMap<String, String>,
     }
 
-    #[derive(PartialEq, Eq, Debug)]
+    #[derive(PartialEq, Eq, Debug, Clone, Copy)]
     pub enum Method{
         GET,
 
@@ -237,7 +221,7 @@ mod req{
 mod resp{
     use std::{
         collections::HashMap,
-        io,
+        io::{self, Bytes, Cursor},
     };
 
     use tokio::io::{
@@ -253,18 +237,45 @@ mod resp{
     }
 
     impl Response<io::Cursor<Vec<u8>>>{
-        pub fn from_html(status: Status, data: impl ToString) -> Self{
-            let bytes = data.to_string().into_bytes();
+        pub fn from_html(status: Status, data: Vec<u8>) -> Self{
 
             let headers = maplit::hashmap! {
                 "Content-Type".to_owned() => "text/html".to_owned(),
-                "Content-Length".to_owned() => bytes.len().to_string(),
+                "Content-Length".to_owned() => data.len().to_string(),
             };
 
             Self{
                 status,
                 headers,
-                payload: io::Cursor::new(bytes),
+                payload: io::Cursor::new(data),
+            }
+        }
+        
+        pub fn from_css(status: Status, data: Vec<u8>) -> Self{
+
+            let headers = maplit::hashmap! {
+                "Content-Type".to_owned() => "text/css".to_owned(),
+                "Content-Length".to_owned() => data.len().to_string(),
+            };
+
+            Self{
+                status,
+                headers,
+                payload: io::Cursor::new(data),
+            }
+        }
+
+        pub fn from_jpg(status: Status, data: Vec<u8>) -> Self{
+
+            let headers = maplit::hashmap! {
+                "Content-Type".to_owned() => "image/jpg".to_owned(),
+                "Content-Length".to_owned() => data.len().to_string(),
+            };
+
+            Self{
+                status,
+                headers,
+                payload: io::Cursor::new(data),
             }
         }
     }

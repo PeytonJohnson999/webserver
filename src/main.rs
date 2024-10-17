@@ -55,9 +55,98 @@ async fn main() -> std::io::Result<()>{
                 let request = parse_request(&mut stream).await.unwrap();
                 let method = request.method;
                 // println!("Request: {:?}", request.clone());
+                match request.path.trim(){
 
+                    //HTML
+                    "/index.html" | "/" if method == Method::GET =>{
+
+                        println!("Index request");
+
+                        // let mut f = String::new();
+
+                        // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
+
+                        let mut index = fs::File::open("html/index.html").unwrap();
+                        // println!("file lines: {}", index.lines().count());
+                        let mut f: Vec<u8> = Vec::new();
+                        index.read_to_end(&mut f);
+                        // let f = String::from_utf8(f).unwrap();
+
+                        // println!("Index file read: {f}");
+
+                        let resp = Response::from_html(
+                            Status::Ok,
+                            f,
+                        );
+
+                        resp.write(&mut stream).await.unwrap();
+                    }
+                    "/portfolio.html" if method == Method::GET => {
+
+                        let mut portfolio = fs::File::open("html/portfolio.html").unwrap();
+                        let mut bytes: Vec<u8> = Vec::new();
+                        portfolio.read_to_end(&mut bytes);
+                        let resp = Response::from_html(Status::Ok, bytes);
+
+                        resp.write(&mut stream).await.unwrap();
+                    }
+
+                    //CSS
+                    "/css/style.css" if method == Method::GET => {
+
+                    
+                        println!("CSS request");
+
+                        // let mut f = String::new();
+    
+                        // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
+    
+                        let mut index = fs::File::open("css/style.css").unwrap();
+                        // println!("file lines: {}", index.lines().count());
+                        let mut f: Vec<u8> = Vec::new();
+                        index.read_to_end(&mut f);
+                        // let f = String::from_utf8(f).unwrap();
+    
+                        // println!("Index file read: {f}");
+    
+                        let resp = Response::from_css(
+                            Status::Ok,
+                            f,
+                        );
+    
+                        resp.write(&mut stream).await.unwrap();
+                    }
+                    //Images
+                    "/images/indexBackground.jpg" if method == Method::GET =>{
+                        eprintln!("Background img request");
+    
+                        let mut index = fs::File::open("images/indexBackground.jpg").unwrap();
+                        // println!("file lines: {}", index.lines().count());
+                        let mut f: Vec<u8> = Vec::new();
+                        index.read_to_end(&mut f);
+                        // eprintln!("img read");
+                        // let f = String::from_utf8(f).unwrap();
+    
+                        // println!("Index file read: {f}");
+    
+                        let resp = Response::from_jpg(
+                            Status::Ok,
+                            f,
+                        );
+    
+                        resp.write(&mut stream).await.unwrap();
+
+                    }
+                    //404
+                    _ => {
+
+                    }
+                }
                 //Write index.html to socket
-                if method == Method::GET && (request.path.trim() == "/" || request.path.trim() == "/ index.html"){
+                if method == Method::GET && (request.path.trim() == "/" || request.path.trim() == "/index.html"){
+
+                                    
+
 
                     println!("Index request");
 
@@ -80,28 +169,7 @@ async fn main() -> std::io::Result<()>{
 
                     resp.write(&mut stream).await.unwrap();
 
-                }else if method == Method::GET && request.path == "/style.css"{
-                    
-                    println!("CSS request");
-
-                    // let mut f = String::new();
-
-                    // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
-
-                    let mut index = fs::File::open("html/style.css").unwrap();
-                    // println!("file lines: {}", index.lines().count());
-                    let mut f: Vec<u8> = Vec::new();
-                    index.read_to_end(&mut f);
-                    // let f = String::from_utf8(f).unwrap();
-
-                    // println!("Index file read: {f}");
-
-                    let resp = Response::from_css(
-                        Status::Ok,
-                        f,
-                    );
-
-                    resp.write(&mut stream).await.unwrap();
+                // }else if method == Method::GET && request.path == "/css/style.css"{
 
                 }else if method == Method::GET && request.path.trim() == "/images/indexBackground.jpg" {
                     eprintln!("Background img request");
@@ -121,20 +189,24 @@ async fn main() -> std::io::Result<()>{
                     );
 
                     resp.write(&mut stream).await.unwrap();
+                // }else if method == Method::GET && request.path.trim() == "/portfolio.html"{
+
+                //     let mut portfolio = fs::File::open("html/portfolio.html").unwrap();
+                //     let mut bytes: Vec<u8> = Vec::new();
+                //     portfolio.read_to_end(&mut bytes);
+                //     let resp = Response::from_html(Status::Ok, bytes);
+
+                //     resp.write(&mut stream).await.unwrap();
+
                 }else {
-                    eprintln!("404 Error");
-                    // eprintln!("request: {:?}", request);
-                    let status_line = "HTTP/1.1 404 NOT FOUND";
-                    let contents = fs::read_to_string("html/404.html").unwrap();
-                    let length = contents.len();
+                    eprintln!("404 error");
+                    eprintln!("req: {request:?}");
+                    let response = Response::err404();
+                    // eprintln!("404 response received");
 
-                    let response = format!(
-                        "{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}"
-                    );
+                    response.write(&mut stream).await.unwrap();
 
-                    // println!("Response: {response}");
-
-                    stream.write(response.as_bytes());
+                    // println!("Response: {:?}", String::from_utf8(response.payload.into_inner()).unwrap());
                 }
             }
         });
@@ -143,6 +215,9 @@ async fn main() -> std::io::Result<()>{
     }
     
     Ok(())
+}
+
+async fn send_index(stream: &mut BufStream<TcpStream>){
 }
 
 mod req{
@@ -220,8 +295,9 @@ mod req{
 
 mod resp{
     use std::{
+        fs::{self},
         collections::HashMap,
-        io::{self, Bytes, Cursor},
+        io::{self, Bytes, Cursor, Read},
     };
 
     use tokio::io::{
@@ -230,6 +306,7 @@ mod resp{
         AsyncWriteExt
     };
 
+    #[derive(Debug, Clone)]
     pub struct Response<S: AsyncRead + Unpin> {
         status: Status,
         headers: HashMap<String, String>,
@@ -278,6 +355,27 @@ mod resp{
                 payload: io::Cursor::new(data),
             }
         }
+
+        pub fn err404() -> Self{
+
+            let mut fBytes = Vec::new();
+            let len = fs::File::read_to_end(&mut fs::File::open("html/404.html").unwrap(), &mut fBytes).unwrap();
+            let status = Status::NotFound;
+
+            let headers = maplit::hashmap! {
+                "Content-Type".to_owned() => "text/html".to_owned(),
+                "Content-Length".to_owned() => len.to_string(),
+            };
+
+            // println!("404 file: {}", String::from_utf8(fBytes.clone()).unwrap());
+
+
+            Self{
+                status,
+                headers,
+                payload: io::Cursor::new(fBytes),
+            }
+        }
     }
 
     impl<S: AsyncRead + Unpin> Response<S>{
@@ -300,7 +398,7 @@ mod resp{
         }
     }
 
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Debug, Clone, Copy)]
     pub enum Status{
         NotFound,
         Ok,

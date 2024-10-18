@@ -54,99 +54,9 @@ async fn main() -> std::io::Result<()>{
 
                 let request = parse_request(&mut stream).await.unwrap();
                 let method = request.method;
-                // println!("Request: {:?}", request.clone());
-                match request.path.trim(){
-
-                    //HTML
-                    "/index.html" | "/" if method == Method::GET =>{
-
-                        println!("Index request");
-
-                        // let mut f = String::new();
-
-                        // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
-
-                        let mut index = fs::File::open("html/index.html").unwrap();
-                        // println!("file lines: {}", index.lines().count());
-                        let mut f: Vec<u8> = Vec::new();
-                        index.read_to_end(&mut f);
-                        // let f = String::from_utf8(f).unwrap();
-
-                        // println!("Index file read: {f}");
-
-                        let resp = Response::from_html(
-                            Status::Ok,
-                            f,
-                        );
-
-                        resp.write(&mut stream).await.unwrap();
-                    }
-                    "/portfolio.html" if method == Method::GET => {
-
-                        let mut portfolio = fs::File::open("html/portfolio.html").unwrap();
-                        let mut bytes: Vec<u8> = Vec::new();
-                        portfolio.read_to_end(&mut bytes);
-                        let resp = Response::from_html(Status::Ok, bytes);
-
-                        resp.write(&mut stream).await.unwrap();
-                    }
-
-                    //CSS
-                    "/css/style.css" if method == Method::GET => {
-
-                    
-                        println!("CSS request");
-
-                        // let mut f = String::new();
-    
-                        // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
-    
-                        let mut index = fs::File::open("css/style.css").unwrap();
-                        // println!("file lines: {}", index.lines().count());
-                        let mut f: Vec<u8> = Vec::new();
-                        index.read_to_end(&mut f);
-                        // let f = String::from_utf8(f).unwrap();
-    
-                        // println!("Index file read: {f}");
-    
-                        let resp = Response::from_css(
-                            Status::Ok,
-                            f,
-                        );
-    
-                        resp.write(&mut stream).await.unwrap();
-                    }
-                    //Images
-                    "/images/indexBackground.jpg" if method == Method::GET =>{
-                        eprintln!("Background img request");
-    
-                        let mut index = fs::File::open("images/indexBackground.jpg").unwrap();
-                        // println!("file lines: {}", index.lines().count());
-                        let mut f: Vec<u8> = Vec::new();
-                        index.read_to_end(&mut f);
-                        // eprintln!("img read");
-                        // let f = String::from_utf8(f).unwrap();
-    
-                        // println!("Index file read: {f}");
-    
-                        let resp = Response::from_jpg(
-                            Status::Ok,
-                            f,
-                        );
-    
-                        resp.write(&mut stream).await.unwrap();
-
-                    }
-                    //404
-                    _ => {
-
-                    }
-                }
-                //Write index.html to socket
+                
+                //Images
                 if method == Method::GET && (request.path.trim() == "/" || request.path.trim() == "/index.html"){
-
-                                    
-
 
                     println!("Index request");
 
@@ -169,7 +79,38 @@ async fn main() -> std::io::Result<()>{
 
                     resp.write(&mut stream).await.unwrap();
 
-                // }else if method == Method::GET && request.path == "/css/style.css"{
+                } else if method == Method::GET && request.path.trim() == "/portfolio.html"{
+
+
+                    let mut portfolio = fs::File::open("html/portfolio.html").unwrap();
+                    let mut bytes: Vec<u8> = Vec::new();
+                    portfolio.read_to_end(&mut bytes);
+                    let resp = Response::from_html(Status::Ok, bytes);
+
+                    resp.write(&mut stream).await.unwrap();
+                } else if method == Method::GET && request.path.trim() == "/css/style.css"{
+
+                    
+                    println!("CSS request");
+
+                    // let mut f = String::new();
+
+                    // fs::File::read_to_string(&mut fs::File::open("html/index.html").await.unwrap(), &mut f);
+
+                    let mut index = fs::File::open("css/style.css").unwrap();
+                    // println!("file lines: {}", index.lines().count());
+                    let mut f: Vec<u8> = Vec::new();
+                    index.read_to_end(&mut f);
+                    // let f = String::from_utf8(f).unwrap();
+
+                    // println!("Index file read: {f}");
+
+                    let resp = Response::from_css(
+                        Status::Ok,
+                        f,
+                    );
+
+                    resp.write(&mut stream).await.unwrap();
 
                 }else if method == Method::GET && request.path.trim() == "/images/indexBackground.jpg" {
                     eprintln!("Background img request");

@@ -1,14 +1,19 @@
 #![allow(warnings)]
 
 use std::{
-    fs::{self, File}, 
-    io::{self, BufRead, BufReader, ErrorKind, Read, Write}, path::Display, str::FromStr //net::{TcpListener, TcpStream}
+    fs::{self, File},
+    io::{self, BufRead, BufReader, ErrorKind, Read, Write},
+    path::Display,
+    str::FromStr, //net::{TcpListener, TcpStream}
 };
 
 use anyhow::anyhow;
 use tokio::{
     // fs::{self, File},
-    io::{AsyncBufRead, AsyncReadExt, AsyncWrite, BufStream, AsyncWriteExt, AsyncBufReadExt, AsyncRead},
+    io::{
+        AsyncBufRead, AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt,
+        BufStream,
+    },
     net::{TcpListener, TcpStream},
 };
 
@@ -50,22 +55,29 @@ async fn main() -> std::io::Result<()> {
                     Err(e) => {
                         // let mut req = String::new();
                         // stream.read_line(&mut req);
-                        panic!("Error parsing req, Root cause: {}",e.root_cause())},
+                        panic!("Error parsing req, Root cause: {}", e.root_cause())
+                    }
                 };
                 let method = request.method;
                 // println!("Path: {}", request.path);
-                
+
                 //Index & portfolio
-                if method == Method::GET && (request.path.trim() == "/" || request.path.trim() == "/index.html" ||
-                request.path.trim() == "/html/index.html"){
-
+                if method == Method::GET
+                    && (request.path.trim() == "/"
+                        || request.path.trim() == "/index.html"
+                        || request.path.trim() == "/html/index.html")
+                {
                     // println!("Index request");
-                    send_page("html/index.html", ContentType::html, &mut stream).await.unwrap();
-
-                } else if method == Method::GET && (request.path.trim() == "/portfolio.html" ||
-                request.path.trim() == "/html/portfolio.html"
-                ){
-                    send_page("html/portfolio.html", ContentType::html, &mut stream).await.unwrap();
+                    send_page("html/index.html", ContentType::html, &mut stream)
+                        .await
+                        .unwrap();
+                } else if method == Method::GET
+                    && (request.path.trim() == "/portfolio.html"
+                        || request.path.trim() == "/html/portfolio.html")
+                {
+                    send_page("html/portfolio.html", ContentType::html, &mut stream)
+                        .await
+                        .unwrap();
 
                 //Basic CSS
                 } else if method == Method::GET && request.path.trim() == "/css/style.css" {
@@ -96,7 +108,7 @@ async fn main() -> std::io::Result<()> {
                     };
 
                 //404 html
-                }else if request.path.trim().contains(".html"){
+                } else if request.path.trim().contains(".html") {
                     eprintln!("404 error");
                     eprintln!("req: {request:?}");
                     let response = Response::err404Page();

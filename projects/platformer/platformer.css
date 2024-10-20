@@ -1,0 +1,20 @@
+body {
+  margin: 0px;
+}
+
+canvas {
+  background-color: lightgray;
+}
+
+img {
+  display: none;
+}
+
+.portfolioLink{
+  position: absolute;
+  font-weight: bold;
+  margin-left: auto;
+  text-decoration-color: white ;
+  left: 95%;
+  top: 0%;
+}

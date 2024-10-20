@@ -4,12 +4,11 @@ use std::{
     fs::{self, File},
     io::{self, BufRead, BufReader, ErrorKind, Read, Write},
     path::Display,
-    str::FromStr, //net::{TcpListener, TcpStream}
+    str::FromStr, 
 };
 
 use anyhow::anyhow;
 use tokio::{
-    // fs::{self, File},
     io::{
         AsyncBufRead, AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt,
         BufStream,
@@ -53,13 +52,10 @@ async fn main() -> std::io::Result<()> {
                 let request = match parse_request(&mut stream).await {
                     Ok(r) => r,
                     Err(e) => {
-                        // let mut req = String::new();
-                        // stream.read_line(&mut req);
                         panic!("Error parsing req, Root cause: {}", e.root_cause())
                     }
                 };
                 let method = request.method;
-                // println!("Path: {}", request.path);
 
                 //Index & portfolio
                 if method == Method::GET
@@ -67,7 +63,6 @@ async fn main() -> std::io::Result<()> {
                         || request.path.trim() == "/index.html"
                         || request.path.trim() == "/html/index.html")
                 {
-                    // println!("Index request");
                     send_page("html/index.html", ContentType::html, &mut stream)
                         .await
                         .unwrap();
